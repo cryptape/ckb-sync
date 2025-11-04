@@ -41,7 +41,7 @@ if [ ! -f "$tar_name" ]; then
 fi
 
 sudo rm -rf testnet_ckb_*_x86_64-unknown-linux-gnu mainnet_ckb_*_x86_64-unknown-linux-gnu
-tar xzvf "${tar_name}"
+tar xzf "${tar_name}"
 rm -f "${tar_name}"
 cp -r "ckb_${ckb_version}_x86_64-unknown-linux-gnu" "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
 mv "ckb_${ckb_version}_x86_64-unknown-linux-gnu" "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"

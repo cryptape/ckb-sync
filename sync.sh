@@ -58,11 +58,12 @@ fi
 ./"mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"/ckb --version >"$result_log"
 
 # 修改mainnet ckb.toml
+cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
+
 sudo ./ckb init --chain mainnet --force
 echo "------------------------------------------------------------"
 grep 'spec =' ckb.toml
 
-cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
 grep "^listen_address =" ckb.toml
 new_listen_address="0.0.0.0:8114"
 sed -i "s/^listen_address = .*/listen_address = \"$new_listen_address\"/" ckb.toml
@@ -82,11 +83,12 @@ tail -n 8 ckb.toml
 cd ..
 
 # 修改testnet ckb.toml
+cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
+
 sudo ./ckb init --chain testnet --force
 echo "------------------------------------------------------------"
 grep 'spec =' ckb.toml
 
-cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
 grep "^listen_address =" ckb.toml
 new_listen_address="0.0.0.0:8115"
 sed -i "s/^listen_address = .*/listen_address = \"$new_listen_address\"/" ckb.toml

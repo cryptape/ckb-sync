@@ -23,6 +23,8 @@ kill_test_ckb() {
 kill_main_ckb
 kill_test_ckb
 
+sleep 5
+
 ckb_version=$(
     curl -s https://api.github.com/repos/nervosnetwork/ckb/releases |
         jq -r '.[] | select(.tag_name | startswith("v0.203")) |

@@ -13,7 +13,7 @@ kill_main_ckb() {
 }
 
 kill_test_ckb() {
-    PIDS=$(sudo lsof -ti:8115)
+    PIDS=$(sudo lsof -ti:8124)
     for i in $PIDS; do
         echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the test ckb $i"
         sudo kill $i
@@ -90,7 +90,7 @@ echo "------------------------------------------------------------"
 grep 'spec =' ckb.toml
 
 grep "^listen_address =" ckb.toml
-new_listen_address="0.0.0.0:8115"
+new_listen_address="0.0.0.0:8124"
 sed -i "s/^listen_address = .*/listen_address = \"$new_listen_address\"/" ckb.toml
 grep "^listen_address =" ckb.toml
 

@@ -69,6 +69,10 @@ new_listen_address="0.0.0.0:8114"
 sed -i "s/^listen_address = .*/listen_address = \"$new_listen_address\"/" ckb.toml
 grep "^listen_address =" ckb.toml
 
+grep "^modules =" ckb.toml
+sed -i '/^modules = .*/s/\]/, "Indexer"]/' ckb.toml
+grep "^modules =" ckb.toml
+
 config_content="
 [metrics.exporter.prometheus]
 target = { type = \"prometheus\", listen_address = \"0.0.0.0:8100\" }
@@ -97,6 +101,10 @@ grep "^listen_address =" ckb.toml
 grep "^listen_addresses" ckb.toml
 sed -i '/listen_addresses/s/8115/8125/' ckb.toml
 grep "^listen_addresses" ckb.toml
+
+grep "^modules =" ckb.toml
+sed -i '/^modules = .*/s/\]/, "Indexer"]/' ckb.toml
+grep "^modules =" ckb.toml
 
 config_content="
 [metrics.exporter.prometheus]

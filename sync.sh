@@ -5,19 +5,19 @@ mainnet_assume_valid_target=""
 testnet_assume_valid_target=""
 
 kill_main_ckb() {
-    PIDS=$(sudo lsof -ti:8114)
-    for i in $PIDS; do
-        echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the main ckb $i"
-        sudo kill $i
-    done
+	PIDS=$(sudo lsof -ti:8114)
+	for i in $PIDS; do
+		echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the main ckb $i"
+		sudo kill $i
+	done
 }
 
 kill_test_ckb() {
-    PIDS=$(sudo lsof -ti:8124)
-    for i in $PIDS; do
-        echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the test ckb $i"
-        sudo kill $i
-    done
+	PIDS=$(sudo lsof -ti:8124)
+	for i in $PIDS; do
+		echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the test ckb $i"
+		sudo kill $i
+	done
 }
 
 kill_main_ckb
@@ -26,18 +26,18 @@ kill_test_ckb
 sleep 5
 
 ckb_version=$(
-    curl -s https://api.github.com/repos/nervosnetwork/ckb/releases |
-        jq -r '.[] | select(.tag_name | startswith("v0.203")) |
+	curl -s https://api.github.com/repos/nervosnetwork/ckb/releases |
+		jq -r '.[] | select(.tag_name | startswith("v0.203")) |
         {tag_name, published_at} | "\(.published_at) \(.tag_name)"' |
-        sort |
-        tail -n 1 |
-        cut -d " " -f2
+		sort |
+		tail -n 1 |
+		cut -d " " -f2
 )
 echo "Latest CKB version: $ckb_version"
 tar_name="ckb_${ckb_version}_x86_64-unknown-linux-gnu.tar.gz"
 
 if [ ! -f "$tar_name" ]; then
-    wget -q "https://github.com/nervosnetwork/ckb/releases/download/${ckb_version}/${tar_name}"
+	wget -q "https://github.com/nervosnetwork/ckb/releases/download/${ckb_version}/${tar_name}"
 fi
 
 sudo rm -rf testnet_ckb_*_x86_64-unknown-linux-gnu mainnet_ckb_*_x86_64-unknown-linux-gnu
@@ -50,10 +50,10 @@ start_day=$(TZ='Asia/Shanghai' date "+%Y-%m-%d")
 result_log="result_${start_day}.log"
 
 if [ -f "$result_log" ]; then
-    # 如果文件存在，则删除文件
-    rm -f "$result_log"
-    # 打印信息提示已删除
-    echo "$result_log已被删除"
+	# 如果文件存在，则删除文件
+	rm -f "$result_log"
+	# 打印信息提示已删除
+	echo "$result_log已被删除"
 fi
 ./"mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"/ckb --version >"$result_log"
 
@@ -122,18 +122,22 @@ cd ..
 echo "rich-indexer type: Not Enabled" >>"$result_log"
 
 # 启动节点
-echo "start mainnet ckb node"
+echo "TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S" start mainnet ckb node"
 if [ -z "${mainnet_assume_valid_target}" ]; then
-    cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-    sudo nohup ./ckb run >/dev/null 2>&1 &
-    cd ..
-    # https://github.com/nervosnetwork/ckb/blob/pkg/v0.203.0/util/constant/src/latest_assume_valid_target.rs
-    echo "mainnet assume-valid-target: default" >>"$result_log"
+	sudo chown -R "$USER:$USER" "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
+	(
+		cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
+		setsid -f ./ckb run >/dev/null 2>&1 </dev/null
+	)
+	disown
+	cd ..
+	# https://github.com/nervosnetwork/ckb/blob/pkg/v0.203.0/util/constant/src/latest_assume_valid_target.rs
+	echo "mainnet assume-valid-target: default" >>"$result_log"
 else
-    cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-    sudo nohup ./ckb run --assume-valid-target "$mainnet_assume_valid_target" >/dev/null 2>&1 &
-    cd ..
-    echo "mainnet assume-valid-target: ${mainnet_assume_valid_target}" >>"$result_log"
+	cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
+	sudo nohup ./ckb run --assume-valid-target "$mainnet_assume_valid_target" >/dev/null 2>&1 &
+	cd ..
+	echo "mainnet assume-valid-target: ${mainnet_assume_valid_target}" >>"$result_log"
 fi
 
 sleep 10

@@ -139,7 +139,7 @@ else
 	echo "mainnet assume-valid-target: ${mainnet_assume_valid_target}" >>"$result_log"
 fi
 
-sleep 10
+#sleep 10
 
 #echo "start testnet ckb node"
 #if [ -z "${testnet_assume_valid_target}" ]; then

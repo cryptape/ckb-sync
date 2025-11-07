@@ -129,7 +129,6 @@ if [ -z "${mainnet_assume_valid_target}" ]; then
 		cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
 		setsid -f ./ckb run >/dev/null 2>&1 </dev/null
 	)
-	disown
 	cd ..
 	# https://github.com/nervosnetwork/ckb/blob/pkg/v0.203.0/util/constant/src/latest_assume_valid_target.rs
 	echo "mainnet assume-valid-target: default" >>"$result_log"

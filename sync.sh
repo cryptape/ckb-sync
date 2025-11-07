@@ -138,18 +138,18 @@ fi
 
 sleep 10
 
-echo "start testnet ckb node"
-if [ -z "${testnet_assume_valid_target}" ]; then
-    cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-    sudo nohup ./ckb run >/dev/null 2>&1 &
-    cd ..
-    echo "testnet assume-valid-target: default" >>"$result_log"
-else
-    cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-    sudo nohup ./ckb run --assume-valid-target "$testnet_assume_valid_target" >/dev/null 2>&1 &
-    cd ..
-    echo "testnet assume-valid-target: ${testnet_assume_valid_target}" >>"$result_log"
-fi
+#echo "start testnet ckb node"
+#if [ -z "${testnet_assume_valid_target}" ]; then
+#    cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
+#    sudo nohup ./ckb run >/dev/null 2>&1 &
+#    cd ..
+#    echo "testnet assume-valid-target: default" >>"$result_log"
+#else
+#    cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
+#    sudo nohup ./ckb run --assume-valid-target "$testnet_assume_valid_target" >/dev/null 2>&1 &
+#    cd ..
+#    echo "testnet assume-valid-target: ${testnet_assume_valid_target}" >>"$result_log"
+#fi
 
 echo "$(grep -c ^processor /proc/cpuinfo)C$(free -h | grep Mem | awk '{print $2}' | sed 's/Gi//')G    $(lsb_release -d | sed 's/Description:\s*//')    $(lscpu | grep "Model name" | cut -d ':' -f2 | xargs)" >>"$result_log"
 sync_start=$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")

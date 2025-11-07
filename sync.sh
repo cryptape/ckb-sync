@@ -122,6 +122,7 @@ cd ..
 echo "rich-indexer type: Not Enabled" >>"$result_log"
 
 # 启动节点
+echo "start mainnet ckb node"
 if [ -z "${mainnet_assume_valid_target}" ]; then
     cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
     sudo nohup ./ckb run >/dev/null 2>&1 &
@@ -135,6 +136,9 @@ else
     echo "mainnet assume-valid-target: ${mainnet_assume_valid_target}" >>"$result_log"
 fi
 
+sleep 10
+
+echo "start testnet ckb node"
 if [ -z "${testnet_assume_valid_target}" ]; then
     cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
     sudo nohup ./ckb run >/dev/null 2>&1 &

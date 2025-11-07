@@ -122,37 +122,32 @@ cd ..
 echo "rich-indexer type: Not Enabled" >>"$result_log"
 
 # 启动节点
-echo "TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S" start mainnet ckb node"
+echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") start mainnet ckb node"
+sudo chown -R "$USER:$USER" "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
+cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
 if [ -z "${mainnet_assume_valid_target}" ]; then
-	sudo chown -R "$USER:$USER" "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
-	(
-		cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-		setsid -f ./ckb run >/dev/null 2>&1 </dev/null
-	)
-	cd ..
 	# https://github.com/nervosnetwork/ckb/blob/pkg/v0.203.0/util/constant/src/latest_assume_valid_target.rs
+	setsid -f ./ckb run >/dev/null 2>&1 </dev/null
 	echo "mainnet assume-valid-target: default" >>"$result_log"
 else
-	cd "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-	sudo nohup ./ckb run --assume-valid-target "$mainnet_assume_valid_target" >/dev/null 2>&1 &
-	cd ..
+	setsid -f ./ckb run --assume-valid-target "$mainnet_assume_valid_target" >/dev/null 2>&1 &
 	echo "mainnet assume-valid-target: ${mainnet_assume_valid_target}" >>"$result_log"
 fi
+cd ..
 
-#sleep 10
+sleep 10
 
-#echo "start testnet ckb node"
-#if [ -z "${testnet_assume_valid_target}" ]; then
-#    cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-#    sudo nohup ./ckb run >/dev/null 2>&1 &
-#    cd ..
-#    echo "testnet assume-valid-target: default" >>"$result_log"
-#else
-#    cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
-#    sudo nohup ./ckb run --assume-valid-target "$testnet_assume_valid_target" >/dev/null 2>&1 &
-#    cd ..
-#    echo "testnet assume-valid-target: ${testnet_assume_valid_target}" >>"$result_log"
-#fi
+echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") start testnet ckb node"
+sudo chown -R "$USER:$USER" "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
+cd "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu" || exit
+if [ -z "${testnet_assume_valid_target}" ]; then
+	setsid -f ./ckb run >/dev/null 2>&1 &
+	echo "testnet assume-valid-target: default" >>"$result_log"
+else
+	setsid -f ./ckb run --assume-valid-target "$testnet_assume_valid_target" >/dev/null 2>&1 &
+	echo "testnet assume-valid-target: ${testnet_assume_valid_target}" >>"$result_log"
+fi
+cd ..
 
 echo "$(grep -c ^processor /proc/cpuinfo)C$(free -h | grep Mem | awk '{print $2}' | sed 's/Gi//')G    $(lsb_release -d | sed 's/Description:\s*//')    $(lscpu | grep "Model name" | cut -d ':' -f2 | xargs)" >>"$result_log"
 sync_start=$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")

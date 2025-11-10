@@ -189,7 +189,7 @@ handle_sync_end_and_maybe_kill() {
       echo "$label kill_time: $(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$result_log"
       local NODE_IP
       NODE_IP=$(curl -s ifconfig.me || echo "127.0.0.1")
-      echo "详见: https://grafana-monitor.nervos.tech/d/pThsj6xVz/test?orgId=1&var-url=$NODE_IP:8100&from=${sync_start_timestamp}&to=${current_timestamp}000" >>"$result_log"
+      echo "详见: https://grafana-monitor.nervos.tech/d/pThsj6xVz/test?orgId=1&var-url=$NODE_IP:8102&from=${sync_start_timestamp}&to=${current_timestamp}000" >>"$result_log"
 
       if [[ "$result_log" == without_restart_result* ]]; then
         python3 sendMsg.py "$result_log" .without_restart_env

@@ -19,8 +19,8 @@ else
     indexer_tip=$((16#$indexer_tip_hex))
 fi
 
-# 获取mainnet的最新区块高度
-latest_hex_height=$(curl -sS -X POST -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "get_tip_header", "params": []}' https://mainnet.ckbapp.dev | jq -r '.result.number' | sed 's/^0x//')
+# 获取mainnet或testnnet的最新区块高度
+latest_hex_height=$(curl -sS -X POST -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "get_tip_header", "params": []}' https://${env}.ckbapp.dev | jq -r '.result.number' | sed 's/^0x//')
 if [[ $? -ne 0 || -z "$latest_hex_height" ]]; then
     latest_height="获取失败"
 else
@@ -43,54 +43,13 @@ else
     sync_rate="无法计算"
 fi
 
-echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${localhost_height} indexer_tip: ${indexer_tip} mainnet_height: ${latest_height} difference: ${difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${start_day}.log
-
-# 获取testnet的最新区块高度
-testnet_localhost_hex_height=$(curl -sS -X POST -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "get_tip_header", "params": []}' http://localhost:8124 | jq -r '.result.number' | sed 's/^0x//')
-if [[ $? -ne 0 || -z "$testnet_localhost_hex_height" ]]; then
-    testnet_localhost_height="获取失败"
-else
-    testnet_localhost_height=$((16#$testnet_localhost_hex_height))
-fi
-
-testnet_indexer_tip_hex=$(curl -sS -X POST -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "get_indexer_tip", "params": []}' http://localhost:8124 | jq -r '.result.block_number' | sed 's/^0x//')
-if [[ $? -ne 0 || -z "$testnet_indexer_tip_hex" ]]; then
-    testnet_indexer_tip="获取失败"
-else
-    testnet_indexer_tip=$((16#$testnet_indexer_tip_hex))
-fi
-
-# 获取mainnet或testnnet的最新区块高度
-testnet_latest_hex_height=$(curl -sS -X POST -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "get_tip_header", "params": []}' https://testnet.ckbapp.dev | jq -r '.result.number' | sed 's/^0x//')
-if [[ $? -ne 0 || -z "$testnet_latest_hex_height" ]]; then
-    testnet_latest_height="获取失败"
-else
-    testnet_latest_height=$((16#$testnet_latest_hex_height))
-fi
-
-if [[ $testnet_indexer_tip =~ ^[0-9]+$ && $testnet_latest_height =~ ^[0-9]+$ ]]; then
-    difference=$(($testnet_latest_height - $testnet_indexer_tip))
-    if [[ $difference -lt 0 ]]; then
-        difference=$((-$difference))
-    fi
-    sync_rate=$(echo "scale=10; $testnet_indexer_tip * 100 / $testnet_latest_height" | bc | awk '{printf "%.2f\n", $0}')
-    sync_rate="${sync_rate}%"
-    height_sync_rate=$(echo "scale=10; $testnet_localhost_height * 100 / $$testnet_latest_height" | bc | awk '{printf "%.2f\n", $0}')
-    height_sync_rate="${height_sync_rate}%"
-
-else
-    difference="无法计算"
-    sync_rate="无法计算"
-fi
+echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${localhost_height} indexer_tip: ${indexer_tip} ${env}_height: ${latest_height} difference: ${difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${start_day}.log
 
 if [ "$exec_type" -eq 5 ] || [ "$exec_type" -eq 6 ]; then
     result_log="without_restart_result_${start_day}.log"
 else
     result_log="result_${start_day}.log"
 fi
-
-echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${localhost_height} indexer_tip: ${indexer_tip} testnet_height: ${latest_height} difference: ${difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${start_day}.log
-
 
 # 检查sync_end是否存在，并且差值小于总高度的1%
 if ! grep -q "sync_end" "$result_log" && [[ $difference =~ ^[0-9]+$ ]] && [[ $difference -lt 13000 ]]; then
@@ -132,6 +91,31 @@ killckb() {
         sudo kill $i
     done
 }
+
+#toggle_env() {
+#    local first_line=$(sed -n '1p' env.txt)
+#    local fourth_line=$(sed -n '4p' env.txt)
+#
+#    # 根据第四行的值来更改第一行和第四行
+#    if [ "$fourth_line" = "1" ]; then
+#        sed -i "4s/.*/2/" env.txt
+#        sed -i "1s/.*/mainnet/" env.txt
+#    elif [ "$fourth_line" = "2" ]; then
+#        sed -i "4s/.*/3/" env.txt
+#        sed -i "1s/.*/mainnet/" env.txt
+#    elif [ "$fourth_line" = "3" ]; then
+#        sed -i "4s/.*/4/" env.txt
+#        sed -i "1s/.*/testnet/" env.txt
+#    elif [ "$fourth_line" = "4" ]; then
+#        sed -i "4s/.*/1/" env.txt
+#        sed -i "1s/.*/mainnet/" env.txt
+#    else
+#        echo "第四行不是1、2、3或4, 未做任何更改"
+#    fi
+#
+#    # 无论如何都将第三行设置为1
+#    sed -i "3s/.*/1/" env.txt
+#}
 
 toggle_env() {
     local fourth_line=$(sed -n '4p' env.txt)

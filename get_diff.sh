@@ -75,7 +75,7 @@ if [[ $testnet_indexer_tip =~ ^[0-9]+$ && $testnet_latest_height =~ ^[0-9]+$ ]];
     fi
     sync_rate=$(echo "scale=10; $testnet_indexer_tip * 100 / $testnet_latest_height" | bc | awk '{printf "%.2f\n", $0}')
     sync_rate="${sync_rate}%"
-    height_sync_rate=$(echo "scale=10; $testnet_localhost_height * 100 / $$testnet_latest_height" | bc | awk '{printf "%.2f\n", $0}')
+    height_sync_rate=$(echo "scale=10; $testnet_localhost_height * 100 / $testnet_latest_height" | bc | awk '{printf "%.2f\n", $0}')
     height_sync_rate="${height_sync_rate}%"
 
 else
@@ -89,7 +89,7 @@ else
     result_log="result_${start_day}.log"
 fi
 
-echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${localhost_height} indexer_tip: ${indexer_tip} testnet_height: ${latest_height} difference: ${difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${start_day}.log
+echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${testnet_localhost_height} indexer_tip: ${testnet_indexer_tip} testnet_height: ${latest_height} difference: ${difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${start_day}.log
 
 
 # 检查sync_end是否存在，并且差值小于总高度的1%

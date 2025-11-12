@@ -83,7 +83,7 @@ else
 fi
 
 if [[ "$testnet_localhost_height" != "获取失败" && "$testnet_indexer_tip" != "获取失败" ]]; then
-	echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${testnet_localhost_height} indexer_tip: ${testnet_indexer_tip} testnet_height: ${testnet_latest_height} difference: ${test_difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${current_day}.log
+	echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${testnet_localhost_height} indexer_tip: ${testnet_indexer_tip} testnet_height: ${testnet_latest_height} difference: ${testnet_difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${current_day}.log
 fi
 
 

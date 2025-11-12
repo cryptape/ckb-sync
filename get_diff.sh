@@ -157,6 +157,38 @@ kill_ckb() {
 	fi
 }
 
+toggle_env() {
+	local file="env.txt"
+	if [[ ! -f "$file" ]]; then
+		echo "[ERROR] $file not found"
+		return 1
+	fi
+
+	# 读取第一行，去掉空白
+	local first next
+	first=$(sed -n '1p' "$file" | tr -d ' \t\r')
+
+	case "$first" in
+	1) next=2 ;;
+	2) next=3 ;;
+	3) next=4 ;;
+	4) next=1 ;;
+	*) next=1 ;; # 非1~4的值时重置为1
+	esac
+
+	# 更新第一行
+	sed -i "1s/.*/$next/" "$file"
+
+	# 确保第二行存在并设为1
+	local lines
+	lines=$(wc -l <"$file")
+	if ((lines < 2)); then
+		echo "1" >>"$file"
+	else
+		sed -i "2s/.*/1/" "$file"
+	fi
+}
+
 # $1=label(mainnet/testnet)  $2=port
 handle_sync_end_and_maybe_kill() {
 	local label="$1" port="$2"
@@ -203,6 +235,7 @@ handle_sync_end_and_maybe_kill() {
 			else
 				python3 sendMsg.py "$result_log"
 			fi
+			toggle_env
 		fi
 	fi
 }

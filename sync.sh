@@ -87,17 +87,23 @@ else
 	mv "ckb_${ckb_version}_x86_64-unknown-linux-gnu" "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
 fi
 
-# -------- 日志文件名逻辑 --------
+# -------- 测试报告result文件名逻辑 --------
 start_day=$(TZ='Asia/Shanghai' date "+%Y-%m-%d")
 if [[ "$RESTART_FLAG" == "0" ]]; then
-	result_log="without_restart_result_${start_day}.log"
+  result_log="without_restart_result_${start_day}.log"
+  other_log="result_${start_day}.log"
 else
-	result_log="result_${start_day}.log"
+  result_log="result_${start_day}.log"
+  other_log="without_restart_result_${start_day}.log"
 fi
-if [ -f "$result_log" ]; then
-	rm -f "$result_log"
-	echo "$result_log已被删除"
-fi
+
+# 当天的result文件都要删掉
+for f in "$result_log" "$other_log"; do
+  if [[ -e "$f" ]]; then
+    rm -f -- "$f"
+    echo "$f 已被删除"
+  fi
+done
 
 if [[ "$NET" == "main" ]]; then
 	"./mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu/ckb" --version >"$result_log"

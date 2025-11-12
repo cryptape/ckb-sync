@@ -3,8 +3,8 @@
 current_day=$(TZ='Asia/Shanghai' date "+%Y-%m-%d")
 
 if [[ -e "diff_${current_day}.log" && ! -w "diff_${current_day}.log" ]]; then
-    sudo chown "$USER":"$(id -gn)" "diff_${current_day}.log" 2>/dev/null || true
-    chmod u+rw "diff_${current_day}.log" 2>/dev/null || true
+	sudo chown "$USER":"$(id -gn)" "diff_${current_day}.log" 2>/dev/null || true
+	chmod u+rw "diff_${current_day}.log" 2>/dev/null || true
 fi
 
 # echo mainnet msg
@@ -49,7 +49,6 @@ if [[ "$localhost_height" != "获取失败" && "$indexer_tip" != "获取失败" 
 	echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${localhost_height} indexer_tip: ${indexer_tip} mainnet_height: ${latest_height} difference: ${difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>"diff_${current_day}.log"
 fi
 
-
 # echo testnet msg
 testnet_localhost_hex_height=$(curl -sS -X POST -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "get_tip_header", "params": []}' http://localhost:8124 | jq -r '.result.number' | sed 's/^0x//')
 if [[ $? -ne 0 || -z "$testnet_localhost_hex_height" ]]; then
@@ -91,41 +90,44 @@ if [[ "$testnet_localhost_height" != "获取失败" && "$testnet_indexer_tip" !=
 	echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") height: ${testnet_localhost_height} indexer_tip: ${testnet_indexer_tip} testnet_height: ${testnet_latest_height} difference: ${testnet_difference} height_sync_rate: ${height_sync_rate} sync_rate: ${sync_rate}" >>diff_${current_day}.log
 fi
 
-
-result_log="$(ls -1 result_*.log | sort -V | tail -n 1)"
+result_log=$(
+	ls -1 {without_restart_result_,result_}*.log 2>/dev/null |
+		sort -V |
+		tail -n 1
+)
 
 # 检查sync_end是否存在，并且差值小于总高度的1%
 finalize_sync() {
-  local net="$1"           # mainnet / testnet
-  local diff_val="$2"      # 对应网络的 difference 数值
-  local log_file="$3"      # 日志文件路径
-  local threshold="${4:-13000}"  # 允许的阈值，默认 13000
+	local net="$1"                # mainnet / testnet
+	local diff_val="$2"           # 对应网络的 difference 数值
+	local log_file="$3"           # 日志文件路径
+	local threshold="${4:-13000}" # 允许的阈值，默认 13000
 
-  if ! grep -q "${net} sync_end" "$log_file" \
-     && [[ "$diff_val" =~ ^[0-9]+$ ]] \
-     && [[ "$diff_val" -lt "$threshold" ]]; then
+	if ! grep -q "${net} sync_end" "$log_file" &&
+		[[ "$diff_val" =~ ^[0-9]+$ ]] &&
+		[[ "$diff_val" -lt "$threshold" ]]; then
 
-    local sync_end sync_start start_sec end_sec diff_sec
-    local days hours minutes seconds
+		local sync_end sync_start start_sec end_sec diff_sec
+		local days hours minutes seconds
 
-    sync_end=$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")
-    echo "${net} sync_end: ${sync_end}（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$log_file"
+		sync_end=$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")
+		echo "${net} sync_end: ${sync_end}（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$log_file"
 
-    # 读取并计算耗时（若未找到 sync_start 则跳过耗时统计，避免脚本退出）
-    sync_start=$(grep 'sync_start' "$log_file" | cut -d' ' -f2-)
-    if [[ -n "$sync_start" ]]; then
-      start_sec=$(date -d "$sync_start" +%s)
-      end_sec=$(date -d "$sync_end" +%s)
-      diff_sec=$((end_sec - start_sec))
+		# 读取并计算耗时（若未找到 sync_start 则跳过耗时统计，避免脚本退出）
+		sync_start=$(grep 'sync_start' "$log_file" | cut -d' ' -f2-)
+		if [[ -n "$sync_start" ]]; then
+			start_sec=$(date -d "$sync_start" +%s)
+			end_sec=$(date -d "$sync_end" +%s)
+			diff_sec=$((end_sec - start_sec))
 
-      days=$((diff_sec / 86400))
-      hours=$(((diff_sec % 86400) / 3600))
-      minutes=$(((diff_sec % 3600) / 60))
-      seconds=$((diff_sec % 60))
+			days=$((diff_sec / 86400))
+			hours=$(((diff_sec % 86400) / 3600))
+			minutes=$(((diff_sec % 3600) / 60))
+			seconds=$((diff_sec % 60))
 
-      echo "${net}同步到最新indexer高度耗时: ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒" >>"$log_file"
-    fi
-  fi
+			echo "${net}同步到最新indexer高度耗时: ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒" >>"$log_file"
+		fi
+	fi
 }
 
 finalize_sync "mainnet" "$difference" "$result_log"
@@ -137,72 +139,72 @@ PORT_TESTNET=8124
 
 # $1=port  $2=label(mainnet/testnet)
 kill_ckb() {
-  local port="$1" label="$2"
-  # 防止出现 lsof: unacceptable port specification（变量为空或非法）
-  if [[ -z "$port" || ! "$port" =~ ^[0-9]+$ ]]; then
-    echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") [WARN] $label: invalid port '$port', skip kill"
-    return 0
-  fi
+	local port="$1" label="$2"
+	# 防止出现 lsof: unacceptable port specification（变量为空或非法）
+	if [[ -z "$port" || ! "$port" =~ ^[0-9]+$ ]]; then
+		echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") [WARN] $label: invalid port '$port', skip kill"
+		return 0
+	fi
 
-  # -i:PORT 写法必须保证port不为空
-  local pids
-  pids=$(sudo lsof -ti:"$port") || true
-  if [[ -n "$pids" ]]; then
-    for i in $pids; do
-      echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the $label ckb $i"
-      sudo kill "$i" || true
-    done
-  fi
+	# -i:PORT 写法必须保证port不为空
+	local pids
+	pids=$(sudo lsof -ti:"$port") || true
+	if [[ -n "$pids" ]]; then
+		for i in $pids; do
+			echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the $label ckb $i"
+			sudo kill "$i" || true
+		done
+	fi
 }
 
 # $1=label(mainnet/testnet)  $2=port
 handle_sync_end_and_maybe_kill() {
-  local label="$1" port="$2"
+	local label="$1" port="$2"
 
-  # 仅当存在 “<label> sync_end” 且不存在 “<label> kill_time” 时处理
-  if grep -q "$label sync_end" "$result_log" && ! grep -q "$label kill_time" "$result_log"; then
-    # 取 sync_end 的时间字符串
-    local sync_end_time_str
-    sync_end_time_str=$(grep 'sync_end' "$result_log" | awk -F'sync_end: |（当前高度' '{print $2}' | head -n1)
+	# 仅当存在 “<label> sync_end” 且不存在 “<label> kill_time” 时处理
+	if grep -q "$label sync_end" "$result_log" && ! grep -q "$label kill_time" "$result_log"; then
+		# 取 sync_end 的时间字符串
+		local sync_end_time_str
+		sync_end_time_str=$(grep 'sync_end' "$result_log" | awk -F'sync_end: |（当前高度' '{print $2}' | head -n1)
 
-    # 转 UTC 秒并按你原来的“减8小时”习惯校正
-    local sync_end_timestamp_utc sync_end_timestamp current_timestamp time_diff
-    sync_end_timestamp_utc=$(date -u -d "$sync_end_time_str" +%s 2>/dev/null || echo "")
-    if [[ -z "$sync_end_timestamp_utc" ]]; then
-      # 解析失败就直接返回，不影响后续脚本
-      return 0
-    fi
-    sync_end_timestamp=$((sync_end_timestamp_utc - 8 * 3600))
+		# 转 UTC 秒并按你原来的“减8小时”习惯校正
+		local sync_end_timestamp_utc sync_end_timestamp current_timestamp time_diff
+		sync_end_timestamp_utc=$(date -u -d "$sync_end_time_str" +%s 2>/dev/null || echo "")
+		if [[ -z "$sync_end_timestamp_utc" ]]; then
+			# 解析失败就直接返回，不影响后续脚本
+			return 0
+		fi
+		sync_end_timestamp=$((sync_end_timestamp_utc - 8 * 3600))
 
-    current_timestamp=$(TZ='Asia/Shanghai' date +%s)
-    time_diff=$((current_timestamp - sync_end_timestamp))
+		current_timestamp=$(TZ='Asia/Shanghai' date +%s)
+		time_diff=$((current_timestamp - sync_end_timestamp))
 
-    # 超过 3 小时(10800秒)则 kill 并记录
-    if [[ $time_diff -ge 10800 ]]; then
-      kill_ckb "$port" "$label"
+		# 超过 3 小时(10800秒)则 kill 并记录
+		if [[ $time_diff -ge 10800 ]]; then
+			kill_ckb "$port" "$label"
 
-      # 取 sync_start 并做同样的时区换算（毫秒，用于 Grafana 链接）
-      local sync_start_time sync_start_timestamp_utc sync_start_timestamp
-      sync_start_time=$(grep 'sync_start:' "$result_log" | head -n1 | cut -d' ' -f2-)
-      sync_start_timestamp_utc=$(date -u -d "$sync_start_time" +%s 2>/dev/null || echo "")
-      if [[ -n "$sync_start_timestamp_utc" ]]; then
-        sync_start_timestamp=$(((sync_start_timestamp_utc - 8 * 3600) * 1000))
-      else
-        sync_start_timestamp=$(( (current_timestamp - 10800) * 1000 ))  # 兜底给个近似窗口
-      fi
+			# 取 sync_start 并做同样的时区换算（毫秒，用于 Grafana 链接）
+			local sync_start_time sync_start_timestamp_utc sync_start_timestamp
+			sync_start_time=$(grep 'sync_start:' "$result_log" | head -n1 | cut -d' ' -f2-)
+			sync_start_timestamp_utc=$(date -u -d "$sync_start_time" +%s 2>/dev/null || echo "")
+			if [[ -n "$sync_start_timestamp_utc" ]]; then
+				sync_start_timestamp=$(((sync_start_timestamp_utc - 8 * 3600) * 1000))
+			else
+				sync_start_timestamp=$(((current_timestamp - 10800) * 1000)) # 兜底给个近似窗口
+			fi
 
-      echo "$label kill_time: $(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$result_log"
-      local NODE_IP
-      NODE_IP=$(curl -s ifconfig.me || echo "127.0.0.1")
-      echo "详见: https://grafana-monitor.nervos.tech/d/pThsj6xVz/test?orgId=1&var-url=$NODE_IP:8102&from=${sync_start_timestamp}&to=${current_timestamp}000" >>"$result_log"
+			echo "$label kill_time: $(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$result_log"
+			local NODE_IP
+			NODE_IP=$(curl -s ifconfig.me || echo "127.0.0.1")
+			echo "详见: https://grafana-monitor.nervos.tech/d/pThsj6xVz/test?orgId=1&var-url=$NODE_IP:8102&from=${sync_start_timestamp}&to=${current_timestamp}000" >>"$result_log"
 
-      if [[ "$result_log" == without_restart_result* ]]; then
-        python3 sendMsg.py "$result_log" .without_restart_env
-      else
-        python3 sendMsg.py "$result_log"
-      fi
-    fi
-  fi
+			if [[ "$result_log" == without_restart_result* ]]; then
+				python3 sendMsg.py "$result_log" .without_restart_env
+			else
+				python3 sendMsg.py "$result_log"
+			fi
+		fi
+	fi
 }
 
 # --- 调用（写死 mainnet / testnet 各自端口） ---

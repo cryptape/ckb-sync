@@ -90,7 +90,7 @@ fi
 # -------- 日志文件名逻辑 --------
 start_day=$(TZ='Asia/Shanghai' date "+%Y-%m-%d")
 if [[ "$RESTART_FLAG" == "0" ]]; then
-	result_log="without_restart${start_day}.log"
+	result_log="without_restart_${start_day}.log"
 else
 	result_log="result_${start_day}.log"
 fi

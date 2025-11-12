@@ -33,13 +33,11 @@ kill_ckb_by_port() {
 
 # -------- 选择网络相关参数 --------
 if [[ "$NET" == "main" ]]; then
-  CHAIN_NAME="mainnet"
   LABEL="mainnet"
   RPC_PORT=8114
   METRICS_PORT=8100
   ASSUME_VALID_TARGET="$mainnet_assume_valid_target"
 else
-  CHAIN_NAME="testnet"
   LABEL="testnet"
   RPC_PORT=8124
   METRICS_PORT=8102

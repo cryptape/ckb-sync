@@ -20,25 +20,36 @@ fi
 PORT_MAINNET=8114
 PORT_TESTNET=8124
 
-kill_main_ckb() {
-	PIDS=$(sudo lsof -ti:${PORT_MAINNET})
-	for i in $PIDS; do
-		echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the main ckb $i"
-		sudo kill $i
-	done
-}
-kill_test_ckb() {
-	PIDS=$(sudo lsof -ti:${PORT_TESTNET})
-	for i in $PIDS; do
-		echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") killed the test ckb $i"
-		sudo kill $i
-	done
+kill_ckb() {
+    local port="$1"
+    local pids
+    pids=$(sudo lsof -t -i:"$port" 2>/dev/null | sort -u)
+
+    if [[ -z "$pids" ]]; then
+        echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") no process found on port $port"
+        return 0
+    fi
+
+    sudo kill "$pids" 2>/dev/null
+    sleep 5
+
+    local still_alive
+    still_alive=$(sudo lsof -t -i:"$port" 2>/dev/null | sort -u)
+    if [[ -n "$still_alive" ]]; then
+        echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") still alive → force killing..."
+        sudo kill -9 "$still_alive" 2>/dev/null
+    fi
+
+    if sudo lsof -t -i:"$port" >/dev/null 2>&1; then
+        echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") WARNING: port $port still occupied after kill attempts"
+    else
+        echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") done killing processes on port $port"
+    fi
 }
 
-kill_test_ckb
-kill_main_ckb
+kill_ckb $PORT_MAINNET
+kill_ckb $PORT_TESTNET
 
-sleep 10
 
 case "$mode" in
   1)

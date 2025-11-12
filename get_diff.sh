@@ -2,6 +2,11 @@
 
 current_day=$(TZ='Asia/Shanghai' date "+%Y-%m-%d")
 
+if [[ -e "diff_${current_day}.log" && ! -w "diff_${current_day}.log" ]]; then
+    sudo chown "$USER":"$(id -gn)" "diff_${current_day}.log" 2>/dev/null || true
+    chmod u+rw "diff_${current_day}.log" 2>/dev/null || true
+fi
+
 # echo mainnet msg
 localhost_hex_height=$(curl -sS -X POST -H "Content-Type: application/json" -d '{"id": 1, "jsonrpc": "2.0", "method": "get_tip_header", "params": []}' http://localhost:8114 | jq -r '.result.number' | sed 's/^0x//')
 if [[ $? -ne 0 || -z "$localhost_hex_height" ]]; then

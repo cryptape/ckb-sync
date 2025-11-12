@@ -31,7 +31,7 @@ kill_ckb() {
     fi
 
     sudo kill "$pids" 2>/dev/null
-    sleep 5
+    sleep 10
 
     local still_alive
     still_alive=$(sudo lsof -t -i:"$port" 2>/dev/null | sort -u)

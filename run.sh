@@ -23,7 +23,7 @@ PORT_TESTNET=8124
 kill_ckb() {
     local port="$1"
     local pids
-    pids=$(sudo lsof -t -i@localhost:"$port" 2>/dev/null | sort -u)
+    pids=$(sudo lsof -t -iTCP:"$port" -sTCP:LISTEN 2>/dev/null | sort -u)
 
     if [[ -z "$pids" ]]; then
         echo "$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S") no process found on port $port"

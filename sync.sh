@@ -118,6 +118,7 @@ if [[ "$NET" == "main" ]]; then
 	sudo ./ckb init --chain mainnet --force
 	echo "------------------------------------------------------------"
 	grep 'spec =' ckb.toml
+	grep 'spec =' ckb.toml | cut -d'/' -f2 | cut -d'.' -f1 >>../"$result_log"
 
 	grep "^listen_address =" ckb.toml
 	sed -i 's/^listen_address = .*/listen_address = "0.0.0.0:8114"/' ckb.toml
@@ -147,6 +148,7 @@ else
 	sudo ./ckb init --chain testnet --force
 	echo "------------------------------------------------------------"
 	grep 'spec =' ckb.toml
+	grep 'spec =' ckb.toml | cut -d'/' -f2 | cut -d'.' -f1 >>../"$result_log"
 
 	grep "^listen_address =" ckb.toml
 	sed -i 's/^listen_address = .*/listen_address = "0.0.0.0:8124"/' ckb.toml

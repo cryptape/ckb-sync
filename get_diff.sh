@@ -91,9 +91,11 @@ if [[ "$testnet_localhost_height" != "获取失败" && "$testnet_indexer_tip" !=
 fi
 
 result_log=$(
-	ls -1 {without_restart_result_,result_}*.log 2>/dev/null |
-		sort -V |
-		tail -n 1
+  ls -1 {without_restart_result_,result_}*.log 2>/dev/null \
+  | awk -F'[_ .]' '{d=$(NF-1); print d, $0}' \
+  | sort -k1,1 \
+  | tail -n1 \
+  | cut -d' ' -f2-
 )
 
 # 检查sync_end是否存在，并且差值小于总高度的1%

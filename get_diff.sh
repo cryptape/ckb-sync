@@ -91,11 +91,11 @@ if [[ "$testnet_localhost_height" != "获取失败" && "$testnet_indexer_tip" !=
 fi
 
 result_log=$(
-  ls -1 {without_restart_result_,result_}*.log 2>/dev/null \
-  | awk -F'[_ .]' '{d=$(NF-1); print d, $0}' \
-  | sort -k1,1 \
-  | tail -n1 \
-  | cut -d' ' -f2-
+	ls -1 {without_restart_result_,result_}*.log 2>/dev/null |
+		awk -F'[_ .]' '{d=$(NF-1); print d, $0}' |
+		sort -k1,1 |
+		tail -n1 |
+		cut -d' ' -f2-
 )
 
 # 检查sync_end是否存在，并且差值小于总高度的1%
@@ -205,7 +205,6 @@ handle_sync_end_and_maybe_kill() {
 		local sync_end_timestamp_utc sync_end_timestamp current_timestamp time_diff
 		sync_end_timestamp_utc=$(date -u -d "$sync_end_time_str" +%s 2>/dev/null || echo "")
 		if [[ -z "$sync_end_timestamp_utc" ]]; then
-			# 解析失败就直接返回，不影响后续脚本
 			return 0
 		fi
 		sync_end_timestamp=$((sync_end_timestamp_utc - 8 * 3600))
@@ -228,9 +227,16 @@ handle_sync_end_and_maybe_kill() {
 			fi
 
 			echo "$label kill_time: $(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$result_log"
-			local NODE_IP
+
+			# 根据网络选择 Grafana 的 metrics 端口：mainnet=8100，testnet=8102
+			local NODE_IP metrics_port
 			NODE_IP=$(curl -s ifconfig.me || echo "127.0.0.1")
-			echo "详见: https://grafana-monitor.nervos.tech/d/pThsj6xVz/test?orgId=1&var-url=$NODE_IP:8102&from=${sync_start_timestamp}&to=${current_timestamp}000" >>"$result_log"
+			if [[ "$label" == "mainnet" ]]; then
+				metrics_port=8100
+			else
+				metrics_port=8102
+			fi
+			echo "详见: https://grafana-monitor.nervos.tech/d/pThsj6xVz/test?orgId=1&var-url=$NODE_IP:${metrics_port}&from=${sync_start_timestamp}&to=${current_timestamp}000" >>"$result_log"
 
 			if [[ "$result_log" == without_restart_result* ]]; then
 				python3 sendMsg.py "$result_log" .without_restart_env

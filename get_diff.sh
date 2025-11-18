@@ -113,7 +113,17 @@ finalize_sync() {
 		local days hours minutes seconds
 
 		sync_end=$(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")
-		echo "${net} sync_end: ${sync_end}（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$log_file"
+
+		# 根据 mainnet / testnet 选择当前高度与 indexer_tip 变量
+		local curr_height curr_tip
+		if [[ "$net" == "testnet" ]]; then
+			curr_height="$testnet_localhost_height"
+			curr_tip="$testnet_indexer_tip"
+		else
+			curr_height="$localhost_height"
+			curr_tip="$indexer_tip"
+		fi
+		echo "${net} sync_end: ${sync_end}（当前高度：$curr_height,当前indexer_tip: $curr_tip)" >>"$log_file"
 
 		# 读取并计算耗时（若未找到 sync_start 则跳过耗时统计，避免脚本退出）
 		sync_start=$(grep 'sync_start' "$log_file" | cut -d' ' -f2-)
@@ -226,8 +236,15 @@ handle_sync_end_and_maybe_kill() {
 				sync_start_timestamp=$(((current_timestamp - 10800) * 1000)) # 兜底给个近似窗口
 			fi
 
-			echo "$label kill_time: $(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")（当前高度：$localhost_height,当前indexer_tip: $indexer_tip)" >>"$result_log"
-
+			local curr_height curr_tip
+			if [[ "$label" == "testnet" ]]; then
+				curr_height="$testnet_localhost_height"
+				curr_tip="$testnet_indexer_tip"
+			else
+				curr_height="$localhost_height"
+				curr_tip="$indexer_tip"
+			fi
+			echo "$label kill_time: $(TZ='Asia/Shanghai' date "+%Y-%m-%d %H:%M:%S")（当前高度：$curr_height,当前indexer_tip: $curr_tip)" >>"$result_log"
 			# 根据网络选择 Grafana 的 metrics 端口：mainnet=8100，testnet=8102
 			local NODE_IP metrics_port
 			NODE_IP=$(curl -s ifconfig.me || echo "127.0.0.1")

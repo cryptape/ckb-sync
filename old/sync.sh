@@ -85,7 +85,7 @@ sed -i "2s/.*/$start_day/" env.txt
 #拉取、解压ckb tar包
 ckb_version=$(
     curl -s https://api.github.com/repos/nervosnetwork/ckb/releases |
-        jq -r '.[] | select(.tag_name | startswith("v0.204")) |
+        jq -r '.[] | select(.tag_name | startswith("v0.203")) |
         {tag_name, published_at} | "\(.published_at) \(.tag_name)"' |
         sort |
         tail -n 1 |

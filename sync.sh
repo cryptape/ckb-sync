@@ -69,11 +69,11 @@ if [ ! -f "$tar_name" ]; then
 	wget -q "https://github.com/nervosnetwork/ckb/releases/download/${ckb_version}/${tar_name}"
 fi
 
-# 仅清理本次要用到的网络目录，避免无谓删除另一网络目录
+# 仅清理本次要用到的网络目录（包含历史的），避免无谓删除另一网络目录
 if [[ "$NET" == "main" ]]; then
-	sudo rm -rf "mainnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
+	sudo rm -rf mainnet_ckb_*_x86_64-unknown-linux-gnu
 else
-	sudo rm -rf "testnet_ckb_${ckb_version}_x86_64-unknown-linux-gnu"
+	sudo rm -rf testnet_ckb_*_x86_64-unknown-linux-gnu
 fi
 
 # 解包一次，然后拷贝/移动出目标目录
